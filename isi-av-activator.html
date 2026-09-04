@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>ISI-AV-Activation - Admin Guide</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <nav>
+    <a href="index.html">Active Projects</a>
+    <span class="sep">|</span>
+    <a href="racklinksetup.html">RackLinkSetup</a>
+    <span class="sep">|</span>
+    <strong>ISI-AV-Activation</strong>
+    <span class="sep">|</span>
+    <a href="signagesetup.html">SignageSetup</a>
+  </nav>
+
+  <h1>ISI-AV-Activation - Admin Guide</h1>
+
+  <h2>What It Does</h2>
+  <p>ISI-AV-Activation.exe retrieves Neat Pulse enrollment codes and Zoom Rooms activation codes for a specific building. When a vendor or engineer runs it, the tool:</p>
+  <ol>
+    <li>Loads all Neat Pulse rooms for the configured building</li>
+    <li>Fetches or generates enrollment codes for each room</li>
+    <li>Authenticates with Zoom and loads Zoom Rooms for the configured location</li>
+    <li>Fetches or generates Zoom activation codes for each room</li>
+    <li>Displays a combined table with both codes</li>
+    <li>Saves <code>activation_codes.csv</code> for printing or reference</li>
+    <li>Provides an interactive search prompt to look up individual rooms</li>
+  </ol>
+
+  <h2>What the Vendor Receives</h2>
+  <p>A zip file downloaded from the project's GitHub release link. It contains:</p>
+  <ul>
+    <li><strong>ISI-AV-Activation.exe</strong> &mdash; the activation code tool (self-updating)</li>
+    <li><strong>VENDOR GUIDE.md</strong> &mdash; step-by-step instructions for the vendor</li>
+  </ul>
+
+  <div class="info-box">
+    <p><strong>Self-updating:</strong> The vendor only downloads the zip once. On every subsequent launch, the exe checks GitHub for a newer release and updates itself automatically.</p>
+  </div>
+
+  <h2>API Keys Required</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Key</th>
+        <th>Service</th>
+        <th>Where to Get It</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>NEAT_API_KEY</code></td>
+        <td>Neat Pulse</td>
+        <td>Neat Pulse admin panel &gt; API Keys</td>
+      </tr>
+      <tr>
+        <td><code>GITHUB_PAT</code></td>
+        <td>GitHub</td>
+        <td>Fine-grained PAT, Contents: Read-only, scoped to the project repo</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>Location Scope</h2>
+  <p>This is the most important configuration for this script. The location scope determines which building's rooms the vendor can see. It is set automatically during project registration using the interactive location picker.</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Constant</th>
+        <th>Purpose</th>
+        <th>Set By</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>NEAT_LOC_ID</code></td>
+        <td>Neat Pulse location ID &mdash; filters rooms to this building</td>
+        <td>Location picker</td>
+      </tr>
+      <tr>
+        <td><code>NEAT_LOC_NAME</code></td>
+        <td>Neat Pulse location name (for display)</td>
+        <td>Location picker</td>
+      </tr>
+      <tr>
+        <td><code>ZOOM_LOC_IDS</code></td>
+        <td>Zoom Rooms location ID(s) &mdash; can be multiple, comma-separated</td>
+        <td>Location picker (auto-matched)</td>
+      </tr>
+      <tr>
+        <td><code>ZOOM_LOC_NAME</code></td>
+        <td>Zoom Rooms location name (for display)</td>
+        <td>Location picker (auto-matched)</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="info-box">
+    <p><strong>Changing the location scope:</strong> Run <code>python project_manager.py --rekey</code>, select the project and ISI-AV-Activator, then choose "Location (Neat + Zoom)". The picker will let you select a new building and trigger a rebuild.</p>
+  </div>
+
+  <h2>Fixed Constants</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Constant</th>
+        <th>Value</th>
+        <th>Purpose</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>NEAT_ORG_ID</code></td>
+        <td><code>R3MlGPX</code></td>
+        <td>Neat Pulse organization ID (same for all projects)</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>Prerequisites</h2>
+  <p>Before the tool will work for a building:</p>
+  <ul>
+    <li>Rooms must already exist in <strong>both</strong> Neat Pulse and Zoom Rooms</li>
+    <li>Room names should match between the two platforms</li>
+    <li>The tool retrieves codes for existing rooms &mdash; it does not create rooms</li>
+  </ul>
+
+  <div class="warning-box">
+    <p><strong>Duplicate room names:</strong> If two rooms within the same platform share a name, the tool will flag them. Ask the AV architect to rename them before distributing the tool.</p>
+  </div>
+
+  <h2>How the Vendor Uses It</h2>
+  <ol>
+    <li>Double-click <strong>ISI-AV-Activation.exe</strong></li>
+    <li>Wait about 30 seconds while rooms load</li>
+    <li>A table appears with all rooms and their codes</li>
+    <li>Type part of a room name to search, or press Enter to exit</li>
+    <li>A CSV file is saved automatically for printing</li>
+  </ol>
+  <p>The session auto-closes after 55 minutes to prevent Zoom token expiry.</p>
+
+  <h2>Zoom Credentials</h2>
+  <p>The Zoom Server-to-Server OAuth credentials are hardcoded in the script source (obfuscated). They are the same across all projects and do not need to be configured per-project. These are <strong>not</strong> stored as GitHub secrets.</p>
+
+  <footer>
+    Intuitive Surgical AV Engineering
+  </footer>
+</body>
+</html>

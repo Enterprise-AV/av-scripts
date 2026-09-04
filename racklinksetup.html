@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>RackLinkSetup - Admin Guide</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <nav>
+    <a href="index.html">Active Projects</a>
+    <span class="sep">|</span>
+    <strong>RackLinkSetup</strong>
+    <span class="sep">|</span>
+    <a href="isi-av-activator.html">ISI-AV-Activation</a>
+    <span class="sep">|</span>
+    <a href="signagesetup.html">SignageSetup</a>
+  </nav>
+
+  <h1>RackLinkSetup - Admin Guide</h1>
+
+  <h2>What It Does</h2>
+  <p>RackLinkSetup.exe is a commissioning tool for RackLink Premium+ PDUs. When a vendor runs it, the script:</p>
+  <ol>
+    <li>Changes the default password and enables HTTPS</li>
+    <li>Sets the PDU name, hostname, and outlet names</li>
+    <li>Configures the time zone and NTP server</li>
+    <li>Updates the firmware (if a newer <code>.bin</code> file is present)</li>
+    <li>Enables RackLink Cloud and claims the device into the correct space</li>
+    <li>Updates the RackLink Inventory Smartsheet with device details</li>
+  </ol>
+
+  <h2>What the Vendor Receives</h2>
+  <p>A zip file downloaded from the project's GitHub release link. It contains:</p>
+  <ul>
+    <li><strong>RackLinkSetup.exe</strong> &mdash; the commissioning tool (self-updating)</li>
+    <li><strong>VENDOR GUIDE.md</strong> &mdash; step-by-step instructions for the vendor</li>
+    <li><strong>Firmware .bin file</strong> &mdash; the approved firmware package</li>
+  </ul>
+
+  <div class="info-box">
+    <p><strong>Self-updating:</strong> The vendor only downloads the zip once. On every subsequent launch, the exe checks GitHub for a newer release and updates itself automatically. Vendors do not need to re-download anything when we push fixes.</p>
+  </div>
+
+  <h2>API Keys Required</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Key</th>
+        <th>Service</th>
+        <th>Where to Get It</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>SMARTSHEET_API_TOKEN</code></td>
+        <td>Smartsheet</td>
+        <td>Account &gt; Personal Settings &gt; API Access</td>
+      </tr>
+      <tr>
+        <td><code>XYTE_API_KEY</code></td>
+        <td>Xyte (RackLink Cloud)</td>
+        <td>Xyte Hub &gt; Organization &gt; Settings &gt; API Keys</td>
+      </tr>
+      <tr>
+        <td><code>GITHUB_PAT</code></td>
+        <td>GitHub</td>
+        <td>Fine-grained PAT, Contents: Read-only, scoped to the project repo</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>Fixed Constants</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Constant</th>
+        <th>Purpose</th>
+        <th>Set During</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>BUILDING</code></td>
+        <td>Scopes the exe to a specific building (e.g. B143)</td>
+        <td>Project registration</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>Vendor Prerequisites</h2>
+  <p>The vendor needs:</p>
+  <ul>
+    <li>A laptop with wired Ethernet (for direct connection to ETH2) and Wi-Fi (for internet)</li>
+    <li>Static IP configured on the Ethernet adapter: <code>192.168.1.243 / 255.255.255.0</code></li>
+    <li>LAN1 (ETH1) of the RackLink connected to the building network</li>
+  </ul>
+  <p>The vendor can also connect over the network (VDI, vendor shop) by selecting "Network / Other" and entering the PDU's IP address.</p>
+
+  <h2>Smartsheet Integration</h2>
+  <p>Each commissioning run adds or updates a row in the RackLink Inventory Smartsheet with:</p>
+  <ul>
+    <li>PDU name, serial number, MAC addresses, model, firmware version</li>
+    <li>ETH1 and ETH2 IP addresses</li>
+    <li>Cloud connection and claim status</li>
+    <li>Automated notes when the IP situation needs follow-up</li>
+  </ul>
+
+  <h2>Firmware</h2>
+  <p>The firmware <code>.bin</code> file is included in the release zip. The script handles version comparison automatically:</p>
+  <ul>
+    <li>Newer firmware available &mdash; prompts the vendor to confirm</li>
+    <li>Already up to date &mdash; skips silently</li>
+    <li>No firmware file present &mdash; skips the step entirely</li>
+  </ul>
+
+  <h2>Re-running</h2>
+  <p>The script is designed to be re-run safely. Common reasons to re-run:</p>
+  <ul>
+    <li>After MAC whitelisting, to update the Smartsheet with the correct network IP</li>
+    <li>After a firmware update was skipped, to apply it later</li>
+    <li>To correct a PDU name or outlet names</li>
+  </ul>
+
+  <footer>
+    Intuitive Surgical AV Engineering
+  </footer>
+</body>
+</html>

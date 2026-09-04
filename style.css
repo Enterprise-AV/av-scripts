@@ -1,0 +1,215 @@
+/* Shared styles for vendor-scripts documentation */
+
+* { box-sizing: border-box; }
+
+body {
+  font-family: "Segoe UI", Arial, sans-serif;
+  margin: 0;
+  padding: 40px;
+  color: #222;
+  line-height: 1.6;
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 40px 24px;
+}
+
+h1 {
+  font-size: 24px;
+  margin-bottom: 4px;
+  border-bottom: 2px solid #e1e4e8;
+  padding-bottom: 8px;
+}
+
+h2 {
+  font-size: 18px;
+  margin-top: 32px;
+  margin-bottom: 12px;
+  color: #24292e;
+}
+
+h3 {
+  font-size: 15px;
+  margin-top: 24px;
+  margin-bottom: 8px;
+}
+
+.updated {
+  color: #666;
+  font-size: 13px;
+  margin-bottom: 24px;
+}
+
+/* Navigation */
+nav {
+  margin-bottom: 32px;
+  padding: 12px 16px;
+  background: #f6f8fa;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+nav a {
+  color: #0366d6;
+  text-decoration: none;
+  margin-right: 16px;
+}
+
+nav a:hover {
+  text-decoration: underline;
+}
+
+nav .sep {
+  color: #ccc;
+  margin-right: 16px;
+}
+
+/* Tables */
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+th, td {
+  text-align: left;
+  padding: 10px 16px;
+  border-bottom: 1px solid #e1e4e8;
+}
+
+th {
+  background: #f6f8fa;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+tr:hover {
+  background: #f9f9f9;
+}
+
+/* Links */
+a {
+  color: #0366d6;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* Info boxes */
+.info-box {
+  background: #f0f7ff;
+  border-left: 4px solid #0366d6;
+  padding: 16px 20px;
+  margin: 20px 0;
+  border-radius: 0 6px 6px 0;
+  font-size: 14px;
+}
+
+.info-box p {
+  margin: 6px 0;
+}
+
+.info-box p:first-child {
+  margin-top: 0;
+}
+
+.info-box p:last-child {
+  margin-bottom: 0;
+}
+
+.warning-box {
+  background: #fffbdd;
+  border-left: 4px solid #d9a800;
+  padding: 16px 20px;
+  margin: 20px 0;
+  border-radius: 0 6px 6px 0;
+  font-size: 14px;
+}
+
+/* Steps */
+.steps {
+  counter-reset: step;
+  list-style: none;
+  padding-left: 0;
+}
+
+.steps li {
+  counter-increment: step;
+  padding: 8px 0 8px 40px;
+  position: relative;
+}
+
+.steps li::before {
+  content: counter(step);
+  position: absolute;
+  left: 0;
+  top: 8px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #0366d6;
+  color: #fff;
+  text-align: center;
+  line-height: 28px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* Code */
+code {
+  background: #f0f0f0;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 13px;
+}
+
+/* Empty state */
+.empty {
+  color: #888;
+  font-style: italic;
+  margin-top: 20px;
+}
+
+/* Script cards */
+.script-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+  margin: 20px 0;
+}
+
+.script-card {
+  border: 1px solid #e1e4e8;
+  border-radius: 8px;
+  padding: 20px;
+  transition: box-shadow 0.2s;
+}
+
+.script-card:hover {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.script-card h3 {
+  margin-top: 0;
+  margin-bottom: 8px;
+}
+
+.script-card p {
+  font-size: 14px;
+  color: #555;
+  margin: 0 0 12px;
+}
+
+.script-card a {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* Footer */
+footer {
+  margin-top: 48px;
+  padding-top: 16px;
+  border-top: 1px solid #e1e4e8;
+  font-size: 13px;
+  color: #888;
+}

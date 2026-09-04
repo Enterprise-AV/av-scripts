@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>SignageSetup - Admin Guide</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <nav>
+    <a href="index.html">Active Projects</a>
+    <span class="sep">|</span>
+    <a href="racklinksetup.html">RackLinkSetup</a>
+    <span class="sep">|</span>
+    <a href="isi-av-activator.html">ISI-AV-Activation</a>
+    <span class="sep">|</span>
+    <strong>SignageSetup</strong>
+  </nav>
+
+  <h1>SignageSetup - Admin Guide</h1>
+
+  <h2>What It Does</h2>
+  <p>SignageSetup automates the commissioning of Azulle Access4 signage players running Zoom Rooms digital signage on Windows IoT. The setup has two phases:</p>
+
+  <h3>Phase 1 &mdash; Initial Setup (Setup.bat)</h3>
+  <ol>
+    <li>Connects to <code>PublicGuest</code> Wi-Fi (captive portal network)</li>
+    <li>Disables Ethernet and Network Discovery</li>
+    <li>Installs the Intel Wi-Fi driver if needed</li>
+    <li>Posts device info (serial number, MAC addresses) to Smartsheet</li>
+    <li>Enrolls the device in Zoom Device Management (ZDM)</li>
+    <li>Installs or updates Zoom Rooms to the minimum required version</li>
+    <li>Creates scheduled tasks for network promotion, connectivity monitoring, and cache cleanup</li>
+  </ol>
+
+  <h3>Phase 2 &mdash; Network Promotion (Automatic)</h3>
+  <p>After the device's MAC addresses are whitelisted via ServiceNow:</p>
+  <ol>
+    <li>The <code>NetworkPromotion</code> scheduled task detects the whitelist approval</li>
+    <li>Deletes the <code>PublicGuest</code> profile and connects to <code>IoT-Device</code> (802.1X)</li>
+    <li>Tests connectivity to <code>zoom.us</code></li>
+    <li>Re-enables Ethernet and disables Network Discovery</li>
+    <li>Removes itself (the promotion tasks) once complete</li>
+  </ol>
+
+  <h2>How It's Distributed</h2>
+  <p>Unlike the other scripts, SignageSetup is <strong>not per-project</strong>. There is one shared release used across all projects:</p>
+  <ul>
+    <li>Download: <a href="https://github.com/isrg-enterprise-av/SignageSetup-Deploy/releases/latest">SignageSetup-Deploy/releases/latest</a></li>
+  </ul>
+  <p>The technician downloads the zip, extracts it to a USB drive, plugs it into the signage player, and runs <code>Setup.bat</code>. The script copies itself to the desktop and relaunches from there.</p>
+
+  <div class="info-box">
+    <p><strong>Self-updating:</strong> After initial setup, a scheduled task (<code>PingAndRestart</code>) checks for updates every 15 minutes. All deployed PCs stay in sync automatically.</p>
+  </div>
+
+  <h2>Secrets</h2>
+  <p>SignageSetup secrets are on the <strong>SignageSetup source repo</strong>, not on vendor-scripts. They are shared across all projects.</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Secret</th>
+        <th>Purpose</th>
+        <th>Where</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>SIGNAGE_SMARTSHEET_API_TOKEN</code></td>
+        <td>Smartsheet API token for posting device info</td>
+        <td>SignageSetup source repo</td>
+      </tr>
+      <tr>
+        <td><code>SIGNAGE_GITHUB_PAT</code></td>
+        <td>Fine-grained PAT for self-update and error reporting</td>
+        <td>SignageSetup source repo</td>
+      </tr>
+      <tr>
+        <td><code>MANAGEMENT_PAT</code></td>
+        <td>Classic PAT to push releases to SignageSetup-Deploy</td>
+        <td>SignageSetup source repo</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>Smartsheet Integration</h2>
+  <p>The commissioning sheet tracks all deployed signage players with:</p>
+  <ul>
+    <li>Serial number, Wi-Fi MAC, Ethernet MAC</li>
+    <li>Current script version (updated automatically on each update check)</li>
+    <li>Update errors (if the self-update fails, the error is posted to the sheet)</li>
+  </ul>
+
+  <h2>Scheduled Tasks</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Task</th>
+        <th>Schedule</th>
+        <th>Purpose</th>
+        <th>Lifecycle</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>PingAndRestart</code></td>
+        <td>Every 15 min</td>
+        <td>Connectivity monitor, Zoom Rooms watchdog, self-update check</td>
+        <td>Permanent</td>
+      </tr>
+      <tr>
+        <td><code>NetworkPromotion</code></td>
+        <td>Hourly + on boot</td>
+        <td>Transitions from PublicGuest to IoT-Device after MAC whitelist</td>
+        <td>Self-deleting</td>
+      </tr>
+      <tr>
+        <td><code>ZoomCacheCleaner</code></td>
+        <td>Weekly (Mon 3 AM)</td>
+        <td>Cleans stale Zoom Rooms cache and logs</td>
+        <td>Permanent</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>Rotating the Smartsheet API Key</h2>
+  <ol>
+    <li>Update <code>SIGNAGE_SMARTSHEET_API_TOKEN</code> on the SignageSetup source repo</li>
+    <li>Push any change (or use workflow_dispatch) to trigger a new release</li>
+    <li>Within 15 minutes, all deployed PCs will download the update with the new key</li>
+  </ol>
+
+  <h2>Troubleshooting</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Issue</th>
+        <th>Cause</th>
+        <th>Fix</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>NetworkPromotion keeps retrying</td>
+        <td>MAC addresses not yet whitelisted</td>
+        <td>Expected &mdash; wait for ServiceNow approval</td>
+      </tr>
+      <tr>
+        <td>Signage content freezes</td>
+        <td>Stale DigitalSignage cache</td>
+        <td>Run <code>ZoomCleanup.bat</code> or wait for the weekly cache cleanup</td>
+      </tr>
+      <tr>
+        <td>Captive portal doesn't open (Win11)</td>
+        <td>IE removed, no auto-detection</td>
+        <td>Setup.bat opens Edge to <code>msftconnecttest.com/redirect</code></td>
+      </tr>
+      <tr>
+        <td>Script window freezes when clicked</td>
+        <td>Quick Edit Mode</td>
+        <td>Already handled by Setup.bat (disables Quick Edit)</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <footer>
+    Intuitive Surgical AV Engineering
+  </footer>
+</body>
+</html>
