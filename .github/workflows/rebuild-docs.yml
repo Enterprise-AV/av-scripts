@@ -1,0 +1,139 @@
+# rebuild-docs.yml — Enterprise-AV/av-scripts
+# Pulls PUBLIC_GUIDE.md from each base repo and converts to styled HTML.
+# Triggered by repository_dispatch from base repos or manually.
+
+name: Rebuild Documentation
+
+on:
+  repository_dispatch:
+    types: [docs-updated]
+  workflow_dispatch:
+
+jobs:
+  rebuild:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Pull PUBLIC_GUIDE.md from base repos
+        env:
+          GH_TOKEN: ${{ secrets.MANAGEMENT_PAT }}
+        run: |
+          mkdir -p _guides
+
+          # RackLinkSetup
+          curl -sL -H "Authorization: token $GH_TOKEN" \
+            -H "Accept: application/vnd.github.raw" \
+            "https://api.github.com/repos/isrg-enterprise-av/RackLink-Setup/contents/PUBLIC_GUIDE.md" \
+            -o _guides/racklinksetup.md
+
+          # ISI-AV-Activation
+          curl -sL -H "Authorization: token $GH_TOKEN" \
+            -H "Accept: application/vnd.github.raw" \
+            "https://api.github.com/repos/isrg-enterprise-av/Intuitive-AV-Activation/contents/PUBLIC_GUIDE.md" \
+            -o _guides/isi-av-activator.md
+
+          # SignageSetup
+          curl -sL -H "Authorization: token $GH_TOKEN" \
+            -H "Accept: application/vnd.github.raw" \
+            "https://api.github.com/repos/isrg-enterprise-av/SignageSetup/contents/PUBLIC_GUIDE.md" \
+            -o _guides/signagesetup.md
+
+          echo "Downloaded guides:"
+          ls -la _guides/
+
+      - name: Convert Markdown to HTML
+        run: |
+          pip install markdown
+
+          python3 << 'PYEOF'
+          import markdown, os, re
+
+          NAV_ITEMS = {
+              "racklinksetup": ("RackLinkSetup", "racklinksetup.html"),
+              "isi-av-activator": ("ISI-AV-Activation", "isi-av-activator.html"),
+              "signagesetup": ("SignageSetup", "signagesetup.html"),
+          }
+
+          def build_nav(active_key):
+              parts = ['<a href="index.html">Active Projects</a>']
+              for key, (label, href) in NAV_ITEMS.items():
+                  if key == active_key:
+                      parts.append(f"<strong>{label}</strong>")
+                  else:
+                      parts.append(f'<a href="{href}">{label}</a>')
+              return "\n    ".join(parts)
+
+          def md_to_html(md_text):
+              # Convert markdown to HTML body content
+              extensions = ["tables", "fenced_code"]
+              body = markdown.markdown(md_text, extensions=extensions)
+              # Replace blockquotes with info-box divs
+              body = re.sub(
+                  r'<blockquote>\s*<p><strong>(.*?)</strong>(.*?)</p>\s*</blockquote>',
+                  r'<div class="info-box"><p><strong>\1</strong>\2</p></div>',
+                  body, flags=re.DOTALL
+              )
+              return body
+
+          def extract_title(md_text):
+              match = re.match(r'^#\s+(.+)', md_text)
+              return match.group(1) if match else "Guide"
+
+          guides = {
+              "racklinksetup": "_guides/racklinksetup.md",
+              "isi-av-activator": "_guides/isi-av-activator.md",
+              "signagesetup": "_guides/signagesetup.md",
+          }
+
+          for key, md_path in guides.items():
+              if not os.path.exists(md_path):
+                  print(f"[WARNING] {md_path} not found, skipping")
+                  continue
+
+              with open(md_path, "r", encoding="utf-8") as f:
+                  md_text = f.read()
+
+              title = extract_title(md_text)
+              body_html = md_to_html(md_text)
+              nav_html = build_nav(key)
+              out_file = NAV_ITEMS[key][1]
+
+              html = f"""<!DOCTYPE html>
+          <html lang="en">
+          <head>
+            <meta charset="UTF-8">
+            <title>{title} - AV Engineering</title>
+            <link rel="stylesheet" href="style.css">
+          </head>
+          <body>
+            <nav>
+              {nav_html}
+            </nav>
+
+            <div class="content">
+              {body_html}
+            </div>
+
+            <footer>Intuitive Surgical AV Engineering</footer>
+          </body>
+          </html>
+          """
+              with open(out_file, "w", encoding="utf-8") as f:
+                  f.write(html)
+              print(f"Generated {out_file} from {md_path}")
+
+          PYEOF
+
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add *.html
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+          else
+            git commit -m "Auto-rebuild docs from base repo guides"
+            git push
+            echo "Pushed updated docs."
+          fi
