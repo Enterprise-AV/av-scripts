@@ -24,19 +24,19 @@ jobs:
           # RackLinkSetup
           curl -sL -H "Authorization: token $GH_TOKEN" \
             -H "Accept: application/vnd.github.raw" \
-            "https://api.github.com/repos/isrg-enterprise-av/RackLink-Setup/contents/PUBLIC_GUIDE.md" \
+            "https://api.github.com/repos/Enterprise-AV/RackLink-Setup/contents/PUBLIC_GUIDE.md" \
             -o _guides/racklinksetup.md
 
           # ISI-AV-Activation
           curl -sL -H "Authorization: token $GH_TOKEN" \
             -H "Accept: application/vnd.github.raw" \
-            "https://api.github.com/repos/isrg-enterprise-av/Intuitive-AV-Activation/contents/PUBLIC_GUIDE.md" \
+            "https://api.github.com/repos/Enterprise-AV/Intuitive-AV-Activation/contents/PUBLIC_GUIDE.md" \
             -o _guides/isi-av-activator.md
 
           # SignageSetup
           curl -sL -H "Authorization: token $GH_TOKEN" \
             -H "Accept: application/vnd.github.raw" \
-            "https://api.github.com/repos/isrg-enterprise-av/SignageSetup/contents/PUBLIC_GUIDE.md" \
+            "https://api.github.com/repos/Enterprise-AV/SignageSetup/contents/PUBLIC_GUIDE.md" \
             -o _guides/signagesetup.md
 
           echo "Downloaded guides:"
